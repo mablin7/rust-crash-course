@@ -1,21 +1,7 @@
-/// Commands that can be sent to the key-value store
-#[derive(Debug, Clone, PartialEq)]
-enum Command {
-    Get { key: String },
-    Set { key: String, value: String },
-    Delete { key: String },
-}
-
-/// Responses from the key-value store
-#[derive(Debug, Clone, PartialEq)]
-enum Response {
-    Value(Option<String>),
-    Set,
-    Deleted,
-}
+use async_trait::async_trait;
 
 /// Trait that all our implementations will share
-#[async_trait::async_trait]
+#[async_trait]
 trait KeyValueStore: Send + Sync + 'static {
     async fn get(&self, key: String) -> Option<String>;
     async fn set(&self, key: String, value: String);
@@ -62,4 +48,10 @@ async fn test_kvstore<S: KeyValueStore>(store: S) {
 
     // Wait for all operations to complete
     let _ = tokio::join!(handle1, handle2, handle3);
+}
+
+#[tokio::main]
+async fn main() {
+    // Task: Implement a key-value store that satisfies the KeyValueStore trait
+    todo!()
 }
