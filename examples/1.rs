@@ -12,8 +12,8 @@ struct World {
 
 impl World {
     fn ball_offset(&self) -> Option<Vector2> {
-        // Task: Return a position that 100 units offset from the ball position, if it exists
-        todo!()
+        let offset = Vector2 { x: 100.0, y: 0.0 };
+        self.ball.as_ref().map(|ball| ball.pos + offset)
     }
 
     fn try_kick(&self) -> Result<f64, String> {
@@ -23,6 +23,18 @@ impl World {
             None => Err("No ball to kick".to_string()),
         }
     }
+}
+
+fn test() -> Result<(), String> {
+    let world = World {
+        ball: Some(Ball {
+            pos: Vector2 { x: 10.0, y: 20.0 },
+        }),
+    };
+
+    let v = world.try_kick()?;
+
+    Ok(())
 }
 
 fn main() {
@@ -35,5 +47,5 @@ fn main() {
     let offset = world.ball_offset();
     println!("Offset ball position {:?}", offset);
 
-    // Task try kicking the ball and handle the error
+    world.try_kick()
 }

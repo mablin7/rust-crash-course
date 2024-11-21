@@ -1,7 +1,6 @@
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
-    time::Duration,
 };
 
 use async_trait::async_trait;
@@ -15,8 +14,7 @@ trait KeyValueStore: Send + Sync + 'static {
 }
 
 /// Test harness that all implementations must pass
-#[tokio::test]
-async fn test_kvstore<S: KeyValueStore>(store: S) {
+async fn test_kvstore<S: KeyValueStore + Clone>(store: S) {
     // Basic set and get
     store.set("hello".to_string(), "world".to_string()).await;
     assert_eq!(
@@ -56,5 +54,39 @@ async fn test_kvstore<S: KeyValueStore>(store: S) {
     let _ = tokio::join!(handle1, handle2, handle3);
 }
 
+#[derive(Clone)]
+struct MutexKeyValueStore {
+    data: Arc<Mutex<HashMap<String, String>>>,
+}
+
+impl MutexKeyValueStore {
+    fn new() -> Self {
+        Self {
+            data: Arc::new(Mutex::new(HashMap::new())),
+        }
+    }
+}
+
+#[async_trait]
+impl KeyValueStore for MutexKeyValueStore {
+    async fn get(&self, key: String) -> Option<String> {
+        let data = self.data.lock().unwrap();
+        data.get(&key).cloned()
+    }
+
+    async fn set(&self, key: String, value: String) {
+        let mut data = self.data.lock().unwrap();
+        data.insert(key, value);
+    }
+
+    async fn delete(&self, key: String) {
+        let mut data = self.data.lock().unwrap();
+        data.remove(&key);
+    }
+}
+
 #[tokio::main]
-async fn main() {}
+async fn main() {
+    let store = MutexKeyValueStore::new();
+    test_kvstore(store).await;
+}

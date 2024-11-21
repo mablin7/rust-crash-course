@@ -12,8 +12,13 @@ trait WorldView {
     fn get_players(&self) -> &[Player];
 
     fn get_closest_player(&self, pos: Vector2) -> Option<PlayerId> {
-        // Task: Return the id of the player closest to the given position
-        todo!()
+        self.get_players()
+            .iter()
+            .min_by_key(|player| {
+                let dist = (pos - player.pos).magnitude();
+                dist as i64
+            })
+            .map(|p| p.id)
     }
 }
 
@@ -33,7 +38,9 @@ struct PlayerCtx {
 }
 
 impl WorldView for PlayerCtx {
-    // Task: Implement the get_players method
+    fn get_players(&self) -> &[Player] {
+        self.world.get_players()
+    }
 }
 
 fn main() {
